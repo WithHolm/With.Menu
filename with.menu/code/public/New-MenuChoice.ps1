@@ -1,5 +1,6 @@
 function New-MenuChoice {
     [CmdletBinding()]
+    # [outputtype([with_Menu_Choice])]
     param (
         [parameter(mandatory)]
         [String]$Name,
@@ -9,7 +10,7 @@ function New-MenuChoice {
     )
     
     begin {
-        $out = [MenuChoice]::new()
+        $out = [with_Menu_Choice]::new()
     }
     
     process {
