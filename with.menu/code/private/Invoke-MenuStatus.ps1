@@ -13,14 +13,28 @@ function Invoke-MenuStatus
     
     process
     {
-        $KeyStatuses = $Status | ? { $_.statustype -eq [with_StatusType]::KeyValue }
-        Write-Verbose "$($KeyStatuses.count) key statuses"
-        $LineStatus = $Status | ? { $_.statustype -eq [with_StatusType]::Line }
-        Write-Verbose "$($LineStatus.count) line statuses"
-        
-        $KeyHash = @{}
-        foreach($stat in $KeyStatuses)
+        if($Status.count)
         {
+            write-host $parent.WithPadding("Status", "-")
+        }
+
+        $KeyStatuses = $Status | ? { $_.statustype -eq [with_StatusType]::KeyValue }
+        $LineStatus = $Status | ? { $_.statustype -eq [with_StatusType]::Line }
+        Write-Verbose "status: $($LineStatus.count) line, $($KeyStatuses.count) keyvalue"
+        
+        $writelines = @{}
+
+        Foreach($Line in $KeyStatuses|select -Unique line)
+        {
+            ($KeyStatuses.where{$_.line -eq $Line}).foreach{
+                $param = 
+            }
+            
+        }
+        foreach($stat in $KeyStatuses|Sort-Object line)
+        {
+            $process = 
+            #execute scriptblock if action is a script
             if ($stat.action -is [scriptblock])
             {
                 try
@@ -37,43 +51,48 @@ function Invoke-MenuStatus
             else{
                 $string = $stat.action
             }
-            $using = @{$stat.name = $String }
-            if ($KeyHash.ContainsKey($stat.Line))
-            {
-                $KeyHash.$($stat.Line).$($stat.name) = @{
-                    val = $String
-                    colour = $stat.colour
-                }
-            }
-            else
-            {
-                $KeyHash.$($stat.Line) = @{
-                    $stat.name = @{
-                        val = $String
-                        colour = $stat.colour
-                    }
-                }
-            }
-        }
 
-        if($Status.count)
-        {
-            write-host $parent.WithPadding("Status", "-")
+            if($stat.)
+            #if keyhas does not have a array for the current line i want to display the status in
+            if(!$KeyHash.ContainsKey($stat.Line))
+            {
+                $KeyHash.$($stat.Line) = @()
+            }
+
+            #add it to the array for the current line 
+            $KeyHash.$($stat.Line) += @{
+                Key = $($stat.name)
+                val = $String
+                length = $stat.name.length + $String.length
+                colour = $stat.colour
+            }
         }
 
         if($KeyStatuses.count)
         {
-            for ($i = 0; $i -lt $KeyHash.Count-1 ; $i++) {
-                $Element = $KeyHash.$i   
-                $Length = $Element.Keys|%{
-                    $_.length + "$($element.$_.val)".Length
-                }|measure -sum|select -ExpandProperty sum
+            foreach($line in $KeyHash.Keys)
+            {
+                $Element = $KeyHash.$i
+                $Length = ($line.length|measure -sum).sum
                 $pad = " "*$parent.PadLength($Length)
-                # $Length = ($element.GetEnumerator()|%{
-                #     $_.key.length+($_.value.val|%{$_.tostring().length}|measure -sum).sum
-                # }|measure -sum).sum
-                # write-host $Length
-                # $pad  = ($parent.WithPadding((";"*$Length),"-").split(";")|select -first 1).trim().replace("-"," ")
+                $WriteLine = @()
+
+                #start of line
+                $WriteLine += @{
+                    NoNewline = $true
+                    object = $pad
+                }
+
+                foreach($item in $Element)
+                {
+
+                }
+
+            }
+            for ($i = 0; $i -lt $KeyHash.Count; $i++) {
+                $Element = $KeyHash.$i   
+                $Length = ($Element.Keys|%{$_.length + "$($element.$_.val)".Length}|measure -sum).sum
+                $pad = " "*$parent.PadLength($Length)
                 if(![string]::IsNullOrEmpty($pad))
                 {
                     write-host $pad -NoNewline
@@ -132,52 +151,6 @@ function Invoke-MenuStatus
                 }
                 write-host ""
             }
-
-            # foreach($element in $KeyHash.GetEnumerator())
-            # {
-            #     $Length = ($element.Value.GetEnumerator()|%{
-            #         $_.key.length+($_.value.val|%{$_.tostring().length}|measure -sum).sum
-            #     }|measure -sum).sum
-            #     # write-host $Length
-            #     $pad  = ($parent.WithPadding((";"*$Length),"-").split(";")|select -first 1).trim().replace("-"," ")
-            #     if(![string]::IsNullOrEmpty($pad))
-            #     {
-            #         write-host $pad -NoNewline
-            #     }
-
-            #     $CountElements = $element.value.count
-            #     foreach($kv in $element.Value.GetEnumerator())
-            #     {
-            #         Write-Verbose "Writing keyvalue $($kv.key):$($kv.value.val) to screen"
-            #         write-host "$($kv.key):" -NoNewline
-            #         $valueparam = @{
-            #             NoNewline=$true
-            #         }
-            #         if ($kv.value.colour)
-            #         {   
-            #             if ($kv.value.val)
-            #             {
-            #                 $valueparam.ForegroundColor = "green"
-            #             }
-            #             else
-            #             {
-            #                 $valueparam.ForegroundColor = "red"
-            #             }
-            #         }
-            #         # Write-Host -Object
-            #         Write-Host $kv.value.val @valueparam
-            #         if($CountElements -gt 1)
-            #         {
-            #             Write-Host ", " -NoNewline
-            #         }
-            #         $CountElements--
-            #     }
-            #     if(![string]::IsNullOrEmpty($pad))
-            #     {
-            #         write-host $pad -NoNewline
-            #     }
-            #     write-host ""
-            # }
         }
 
         if($LineStatus.count)

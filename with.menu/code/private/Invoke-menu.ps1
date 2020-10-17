@@ -54,7 +54,7 @@ function invoke-Menu {
 
             if($Menu.parentid -eq "")
             {
-                $ReadHostText += "or 'q' to quit"
+                $ReadHostText += " or 'q' to quit"
             }
             else
             {
@@ -85,21 +85,6 @@ function invoke-Menu {
                     elseif($selection -is [with_Menu_Choice])
                     {
                         Invoke-Menuchoice -Choice $selection -parent $Menu
-                        # if($selection.action -is [scriptblock])
-                        # {
-                        #     write-host ($Menu.WithPadding("Executing '$($selection.name)'"))
-                        #     $selection.action.invoke()|%{
-                        #         write-host $_
-                        #     } 
-                                
-                        #     write-host ""
-                        #     # write-host ($Menu.WithPadding("End Execution $($selection.name)"))
-                        # }
-                        # else 
-                        # {
-                        #     write-verbose ($selection|convertto-json)
-                        #     $selection.action
-                        # }
                     }
                 }
                 else

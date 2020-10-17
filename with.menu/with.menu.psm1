@@ -1,12 +1,12 @@
 class with_Menu_item{
     [With_Menutype]$Type
-    [string]$id
+    # [string]$id
     [String]$Name
     [string]$description
-    [string]$parentId
+    # [string]$parentId
     [string]ToString()
     {
-        return "[$($this.Type)]:[$($this.id)]"
+        return "[$($this.Type)]:[$($this.name)]"
     }
 }
 
@@ -57,12 +57,13 @@ class with_Menu_status:with_Menu_item{
     [with_Menutype]$Type = [with_Menutype]::Status
     [with_StatusType]$StatusType
     [int]$Line = 0
-    [bool]$Colour = $false
+    [System.ConsoleColor]$Color
+    [bool]$Boolean = $false
     new(){}
 
     [string]ToString()
     {
-        return "[$($this.Type)/$($this.StatusType)]:[$($this.id)]"
+        return "[$($this.Type)/$($this.StatusType)]:[$($this.name)]"
     }
 }
 

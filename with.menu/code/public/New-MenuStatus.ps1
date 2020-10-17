@@ -6,7 +6,8 @@ function New-MenuStatus {
         [with_StatusType]$Statustype,
         [parameter(mandatory)]
         $action,
-        [switch]$Colour,
+        [switch]$Boolean,
+        [System.ConsoleColor]$Color = ((get-host).ui.rawui.ForegroundColor),
         $line = 0
     )
     
@@ -18,10 +19,11 @@ function New-MenuStatus {
         $out.name = $Name
         $out.description = ""
         $out.action = $action
-        $out.id = $Name
+        # $out.id = $Name
         $out.statustype = $Statustype
         $out.line = $line
-        $out.colour = $Colour.IsPresent
+        $out.Boolean = $Colour.IsPresent
+        $out.color = $Color
         return $out
     }
     

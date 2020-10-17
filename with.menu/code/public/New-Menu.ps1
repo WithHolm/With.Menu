@@ -2,10 +2,10 @@ function New-Menu {
     [CmdletBinding()]
     # [outputtype([with_Menu])]
     param (
-        [string]$id,
+        # [string]$id,
         [parameter(mandatory)]
         [string]$Name,
-        [parameter(mandatory)]
+        # [parameter(mandatory)]
         [string]$Description,
         [int]$TitleWidth,
 
@@ -25,9 +25,9 @@ function New-Menu {
         $Menu = [with_Menu]::new()
         
         $Menu.Name = $Name
-        $Menu.description = $Description
-        $Menu.id = $id
-        $Menu.parentId = ""
+        $Menu.description = "$Description"
+        # $Menu.id = $id
+        # $Menu.parentId = ""
         if($TitleWidth)
         {
             $Menu.TitleWidth = $TitleWidth
@@ -40,10 +40,9 @@ function New-Menu {
     process {
         if($PSCmdlet.ParameterSetName -eq "items")
         {
-            Write-verbose "Menu '$id': getting items from array"
+            Write-verbose "Menu '$name': getting items from array"
             $UsingItems = @($Items|?{$_ -is [with_Menu_item]})|%{
                 Write-verbose "Menu choice $_"
-                $_.parentId = $id
                 $_
             }
         }
@@ -52,28 +51,35 @@ function New-Menu {
             Write-Verbose "Menu '$id': Getting items from scriptblock"
             try{
                 $invoke = $Definition.invoke()
-                # $invoke|%{$_ -is [with_Menu_Choice] -or $_ -is [with_Menu]}
                 $Menu.choices = @($invoke|?{$_ -is [with_Menu_Choice] -or $_ -is [with_Menu]}|%{
                     Write-verbose "Menu $_"
-                    $_.parentId = $id
                     $_
                 })
 
                 $menu.status = @($invoke|?{$_ -is [with_Menu_status]}|%{
                     Write-verbose "status $_"
-                    $_.parentId = $id
                     $_
                 })
             }
             catch{
-                throw "Error defining choices for '$name': $($_.Exception.InnerException.InnerException.ErrorRecord)"
+                $record = $_.Exception.InnerException.ErrorRecord
+                Write-Error -ErrorRecord $record
+            }
+        }
+
+        foreach($status in $Menu.status)
+        {
+            $conflictingStatus = ($Menu.status|?{$_.line -eq $status.line -and $_.StatusType -ne $status.StatusType})
+            if(($Menu.status|?{$_.line -eq $status.line -and $_.StatusType -ne $status.StatusType}))
+            {
+                throw "'$($status.Name)' Keyvalue status cannot share a line with line statuses: $($conflictingStatus.name -join ", ")"
             }
         }
 
         Write-verbose "Found $($Menu.choices.Count) choices and $($menu.status.Count) statuses"
         if($Menu.choices.count -eq 0 -and $Menu.status.count -eq 0)
         {
-            throw "The menu '$id' doesent have any choices or statuses"
+            throw "The menu '$name' doesent have any choices or statuses"
         }        
         return $Menu
     }
