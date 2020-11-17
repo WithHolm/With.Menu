@@ -1,33 +1,48 @@
 function New-MenuStatus {
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName="Boolean")]
+    [outputtype([with_Menu_status])]
     param (
-        [parameter(mandatory)]
+        [parameter(mandatory, Position=0)]
         [String]$Name,
-        [with_StatusType]$Statustype,
-        [parameter(mandatory)]
+        
+        [parameter(mandatory, Position = 1)]
         $action,
+        
+        [parameter(ParameterSetName="Boolean")]
         [switch]$Boolean,
-        [System.ConsoleColor]$Color = ((get-host).ui.rawui.ForegroundColor),
-        $line = 0
+        
+        [parameter(ParameterSetName="Color")]
+        [System.ConsoleColor]$Color,
+        
+        $line = 0,
+
+        [string]$FilterName,
+        [Boolean]$FilterValue = $true
     )
     
     begin {
-        $out = [with_Menu_Status]::new()
+        $Status = [with_Menu_Status]::new()
     }
     
     process {
-        $out.name = $Name
-        $out.description = ""
-        $out.action = $action
-        # $out.id = $Name
-        $out.statustype = $Statustype
-        $out.line = $line
-        $out.Boolean = $Colour.IsPresent
-        $out.color = $Color
-        return $out
-    }
-    
-    end {
+        $Status.name = $Name
+        $Status.action = $action
+        $Status.statustype = [with_StatusType]::KeyValue
+        $Status.line = $line
+        $Status.Boolean = $Boolean.IsPresent
         
+        if(![string]::IsNullOrEmpty($FilterName))
+        {
+            $Status.filter = $FilterName
+            $Status.FilterValue = $FilterValue
+        }
+
+        if($Color)
+        {
+            $Status.color = $Color
+        }
+    }
+    end {
+        return $Status   
     }
 }

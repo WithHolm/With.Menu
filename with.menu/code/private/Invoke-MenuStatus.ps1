@@ -1,176 +1,47 @@
 function Invoke-MenuStatus
 {
     [CmdletBinding()]
+    [Outputtype([With_Menu_LineItem])]
     param (
-        [System.Collections.Generic.List[with_Menu_Status]]$Status,
-        [with_menu]$parent
+        [System.Collections.Generic.List[with_Menu_Status]]$Status
     )
     
-    begin
-    {
-        
-    }
+    begin{}
     
     process
     {
-        if($Status.count)
-        {
-            write-host $parent.WithPadding("Status", "-")
-        }
-
-        $KeyStatuses = $Status | ? { $_.statustype -eq [with_StatusType]::KeyValue }
-        $LineStatus = $Status | ? { $_.statustype -eq [with_StatusType]::Line }
-        Write-Verbose "status: $($LineStatus.count) line, $($KeyStatuses.count) keyvalue"
-        
-        $writelines = @{}
-
-        Foreach($Line in $KeyStatuses|select -Unique line)
-        {
-            ($KeyStatuses.where{$_.line -eq $Line}).foreach{
-                $param = 
-            }
+        $Status | % {
+            #KEY
+            $Key = [With_menu_LineItem]::new()
+            $Key.Text = "$($_.Name): "
+            $Key.type = "Status"
             
-        }
-        foreach($stat in $KeyStatuses|Sort-Object line)
-        {
-            $process = 
-            #execute scriptblock if action is a script
-            if ($stat.action -is [scriptblock])
+            
+            #VALUE
+            $Val = $_.GetActionString()
+            $Value = [With_menu_LineItem]::new()
+            $Value.Text = $val
+            $Value.type = "Status"
+
+            if ($_.Boolean)
             {
-                try
+                if ([bool]::Parse($val))
                 {
-                    $String = $stat.action.invoke()
-
+                    $Value.color = [System.ConsoleColor]::Green 
                 }
-                catch
-                {
-                    Write-warning "Error happened when processing option '$($Status.name)':$($Status.description)"
-                    Write-Error -ErrorRecord $_.Exception.InnerException.InnerException.ErrorRecord -RecommendedAction "Fix choice '$($Status.name)'"
+                else 
+                { 
+                    $Value.color = [System.ConsoleColor]::red 
                 }
             }
-            else{
-                $string = $stat.action
-            }
-
-            if($stat.)
-            #if keyhas does not have a array for the current line i want to display the status in
-            if(!$KeyHash.ContainsKey($stat.Line))
+            elseif ($_.Color -ne $((get-host).ui.rawui.ForegroundColor))
             {
-                $KeyHash.$($stat.Line) = @()
+                $Value.color = $_.Color
             }
 
-            #add it to the array for the current line 
-            $KeyHash.$($stat.Line) += @{
-                Key = $($stat.name)
-                val = $String
-                length = $stat.name.length + $String.length
-                colour = $stat.colour
-            }
-        }
-
-        if($KeyStatuses.count)
-        {
-            foreach($line in $KeyHash.Keys)
-            {
-                $Element = $KeyHash.$i
-                $Length = ($line.length|measure -sum).sum
-                $pad = " "*$parent.PadLength($Length)
-                $WriteLine = @()
-
-                #start of line
-                $WriteLine += @{
-                    NoNewline = $true
-                    object = $pad
-                }
-
-                foreach($item in $Element)
-                {
-
-                }
-
-            }
-            for ($i = 0; $i -lt $KeyHash.Count; $i++) {
-                $Element = $KeyHash.$i   
-                $Length = ($Element.Keys|%{$_.length + "$($element.$_.val)".Length}|measure -sum).sum
-                $pad = " "*$parent.PadLength($Length)
-                if(![string]::IsNullOrEmpty($pad))
-                {
-                    write-host $pad -NoNewline
-                }
-
-                $CountElements = $element.count
-
-                foreach($key in $Element.keys)
-                {
-                    Write-Verbose "Writing keyvalue $($key):$($Element.$key.val) to screen"
-                    $valueparam = @{
-                        NoNewline=$true
-                    }
-                    write-host "$($key):" -NoNewline
-
-                    if ($kv.value.colour)
-                    {   
-                        $valueparam.ForegroundColor = "green"
-                        if (!$kv.value.val)
-                        {
-                            $valueparam.ForegroundColor = "red"
-                        }
-                    }
-
-
-                }
-                foreach($kv in $element.GetEnumerator())
-                {
-                    Write-Verbose "Writing keyvalue $($kv.key):$($kv.value.val) to screen"
-                    write-host "$($kv.key):" -NoNewline
-                    $valueparam = @{
-                        NoNewline=$true
-                    }
-                    if ($kv.value.colour)
-                    {   
-                        if ($kv.value.val)
-                        {
-                            $valueparam.ForegroundColor = "green"
-                        }
-                        else
-                        {
-                            $valueparam.ForegroundColor = "red"
-                        }
-                    }
-                    # Write-Host -Object
-                    Write-Host $kv.value.val @valueparam
-                    if($CountElements -gt 1)
-                    {
-                        Write-Host ", " -NoNewline
-                    }
-                    $CountElements--
-                }
-                if(![string]::IsNullOrEmpty($pad))
-                {
-                    write-host $pad -NoNewline
-                }
-                write-host ""
-            }
-        }
-
-        if($LineStatus.count)
-        {
-            $LineStatus|%{
-                Write-host $parent.WithPadding($_.action, " ")
-            }
-            # $usingMenu.Status | ? { $_.statustype -eq [with_StatusType]::Line } | % {
-                
-            # }
-        }
-
-        if($Status.count)
-        {
-            write-host $parent.WithPadding(".", ".")
+            Write-Output $Key
+            Write-Output $Value
         }
     }
-    
-    end
-    {
-        
-    }
+    end{}
 }

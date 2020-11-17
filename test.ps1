@@ -1,23 +1,26 @@
 ipmo "$PSScriptRoot\with.menu" -Force -Verbose
 
-$menu = New-Menu -Name "Main menu" -Definition {
-    New-MenuStatus -Name "keyval" -Statustype KeyValue -action {
-        $true
+$global:testing = $false
+New-Menu "Main Menu" {
+    New-MenuFilter MenuEnabled {$global:testing -eq $true}
+    
+    New-MenuStatus "Menu enabled" {$Global:testing} -Boolean -Type KeyValue
+    New-MenuStatus -Name "Elevated" -Type KeyValue -Boolean -line 4 -action {
+        [Security.Principal.WindowsPrincipal]::Current.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    } -FilterName MenuEnabled
+
+    New-MenuChoice "Enable Menu" -Action {$Global:testing = $true} -FilterName Menuenabled -FilterValue $false
+
+    New-Menu "Menu" -FilterName "MenuEnabled" -Action {
+        New-MenuFilter "MenuEnabled" {$global:testing}
+        New-MenuStatus "Menu enabled" {$Global:testing} -Boolean -Type KeyValue
+        New-MenuChoice "Disable Menu" -Action {
+            3..1|%{
+                Write-host "Disabling menu in $_"
+                Start-Sleep -Seconds 1
+            }
+            $Global:testing = $false
+        } -FilterName MenuEnabled
     }
-    New-MenuStatus -Name "keyval2" -Statustype KeyValue -action {
-        $true
-    }
-    New-MenuStatus -Name "status" -Statustype Line -action {
-        $true
-    }
-    # New-MenuStatus -Name "Admin Enabled" -Statustype KeyValue -action {$false} -colour
-    # New-MenuStatus -Name "Connected to" -Statustype KeyValue -action "Contoso.com" -line 1
-    # New-MenuStatus -Name "compname"  -Statustype Line -action "name of the computer is '$env:COMPUTERNAME'"
-    # New-MenuChoice -Name "Get Items" -action {& .\Dostufff.ps1}
-    # New-Menu -Name "sub menu" -description "details" -Definition {
-    #     New-MenuChoice -Name "throw" -action {throw "this is an error"}3
-    #     New-MenuChoice -Name "Something" -action "something"
-    #     New-MenuChoice -Name "Get Items" -action {gci}
-    # }
-} 
-#| Start-Menu -Verbose
+} -Verbose -Debug|Start-Menu -Verbose
+#|Start-Menu

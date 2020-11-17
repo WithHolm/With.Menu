@@ -1,27 +1,32 @@
 function New-MenuChoice {
     [CmdletBinding()]
-    # [outputtype([with_Menu_Choice])]
+    [outputtype([with_Menu_Choice])]
     param (
-        [parameter(mandatory)]
+        [parameter(mandatory,Position=0)]
         [String]$Name,
-        [string]$description,
-        [parameter(mandatory)]
-        $action
+        # [string]$description,
+        [parameter(mandatory,Position=1)]
+        $Action,
+        [string]$FilterName,
+        [Boolean]$FilterValue = $true
     )
     
     begin {
-        $out = [with_Menu_Choice]::new()
+        $Choice = [with_Menu_Choice]::new()
     }
     
     process {
-        $out.name = $Name
-        $out.description = $description
-        $out.action = $action
-        $out.id = $Name
-        return $out
+        $Choice.name = $Name
+        # $Choice.description = $description
+        $Choice.action = $action
+
+        if(![string]::IsNullOrEmpty($FilterName))
+        {
+            $Choice.filter = $FilterName
+            $Choice.FilterValue = $FilterValue
+        }
     }
-    
     end {
-        
+        return $Choice
     }
 }
