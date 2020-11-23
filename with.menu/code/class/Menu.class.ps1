@@ -2,40 +2,42 @@
 
 enum with_MenuReturn
 {
-    NotFinished = 0
-    Quit = 1
-    Back = 2
-    Error = 3
+    NotFinished
+    Quit
+    Back
+    Error
+    Refresh
 }
 
 enum with_Menutype
 {
-    Choice = 0
-    Menu = 1
-    Status = 2
-    Filter = 3
-    Setting = 4
+    Choice
+    Menu
+    Status
+    Filter
+    Setting
+    Selection
 }
 
 enum With_ClearScreenOn
 {
-    None = 0
-    Execution = 1
-    Menu = 2
-    All = 3
+    None
+    Execution
+    Menu
+    All
 }
 
 enum With_Position
 {
-    Left = 0
-    Middle = 1
-    Right = 2
+    Left
+    Middle
+    Right
 }
 
 enum with_WidthType
 {
-    Standard = 0
-    Precentage = 1
+    Standard
+    Precentage
 }
 
 class with_menu_item
@@ -247,6 +249,37 @@ class with_menu:With_Menu_ShowItem
         $item.Text = $this.name
         return $item
     }
+}
+
+enum with_menu_selection_returnType
+{
+    int
+    string
+    object
+}
+
+enum with_menu_selection_optionalInput
+{
+    quit
+    back
+    refresh
+}
+
+enum with_menu_selection_acceptedInput
+{
+    int
+    # firstLetter
+}
+
+class with_menu_selection:With_Menu_ShowItem
+{
+    [System.Collections.Generic.List[with_menu_choice]]$action
+    [with_Menutype]$Type = [with_Menutype]::Selection
+    [with_menu_selection_returntype]$ReturnType = [with_menu_selection_returntype]::int
+    [with_menu_selection_optionalInput[]]$OptionalInput = @()
+    [with_menu_selection_acceptedInput]$AcceptedInput = @()
+    [with_MenuReturn]$ReturnCode
+    new(){}
 }
 
 class with_menu_choice:With_Menu_ShowItem

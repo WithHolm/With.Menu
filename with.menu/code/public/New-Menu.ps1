@@ -59,7 +59,7 @@ function New-Menu {
             #if there are more than 1 item with the same name, throw
             if(($MenuItems.where{$_.name -eq $name}).count -gt 1)
             {
-                throw "You cannot have multible menu items named '$name': $(($MenuItems.where{$_.name -eq $name}) -join ", ")"
+                throw "You cannot have multiple menu items named '$name': $(($MenuItems.where{$_.name -eq $name}) -join ", ")"
             }
         }
 

@@ -15,7 +15,7 @@ function Invoke-MenuMessage {
         if($Message.wait)
         {
             $Wait = [with_menu_lineitem]::new()
-            $Wait.text = "Press enter to continue"
+            $Wait.text = "PRESS ENTER TO CONTINUNE"
             $Wait.type = "Question"
             Write-Output $Wait
         }

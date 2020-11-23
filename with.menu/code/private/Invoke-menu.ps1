@@ -90,129 +90,191 @@ function invoke-Menu {
             {
                 $Writer.add((New-Divideline))
             }
+            Write-Menu -writer $Writer
             
-            if( $Choices.count)
+            $optParam = @{
+                OptionalInputs = @("refresh")
+            }
+            if($menu.IsRoot)
             {
-                $count = 1
-                $Line = $Writer.NextLine()
-                $Choices|%{
-                    $ch = [With_menu_LineItem]::new()
-                    $ch.Text = "$count. $($_.name)"
-                    $ch.type = "Choice"
-                    $Writer.Add($Line,$ch)
-                    $count++
-                }
-            }
-            
-            #QUESTION
-            $ReadHostText = @()
-            if($Choices.Count)
-            {
-                $ReadHostText += "Select from 1-$($Choices.Count)"
-            }
-
-            if(!$Menu.IsRoot)
-            {
-                $ReadHostText += "(b)ack"
-            }
-
-            $ReadHostText += "(q)uit"
-            $ReadHostText += "(r)efresh"
-            $Question = [With_menu_LineItem]::new()
-            $Question.Text = $ReadHostText -join ", "
-            $Question.type = "question"
-            $Writer.Add($Question)
-
-            $answer = ""
-            try{
-                $Answer = Write-Menu -writer $writer #-settings $menu.Settings
-            }
-            catch [System.ArgumentOutOfRangeException] {
-                Write-Verbose "Catched a out of range exception for setcursorposition. refreshing"
-                $answer = "r"
-            }
-            catch{
-                throw $_
-            }
-
-            Write-Verbose "Answer: '$answer'"
-            $AnswerWriter = [With_Menu_Writer]::new()
-            if($Answer -match "^[0-9]{1,2}$")
-            {
-                $Answer = [int]$Answer
-                if($Answer -le $Choices.count -and $Answer -ne 0)
-                {
-                    $selection = $Choices[($Answer-1)]
-                    Write-verbose "Selected choice $answer`: $selection"
-                    if($selection -is [with_Menu])
-                    {
-                        $MenuReturn = Invoke-Menu -menu $selection
-                        if($MenuReturn.returncode -eq [with_MenuReturn]::Error)
-                        {
-                            throw "Error happened!"
-                        }
-                        elseif($MenuReturn.returncode -eq [with_MenuReturn]::Quit)
-                        {
-                            $Menu.returncode = [with_menureturn]::quit
-                            $found = $true
-                        }
-                    }
-                    elseif($selection -is [with_Menu_Choice])
-                    {
-                        Invoke-Menuchoice -Choice $selection -parent $Menu
-                        if($menu.Settings.WaitAfterChoiceExecution)
-                        {
-                            Write-Debug "Wait after execution enabled. sending wait message"
-                            New-MenuMessage -Message "" -Wait|Invoke-MenuMessage|%{
-                                $AnswerWriter.Add($_)
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    $msg = New-MenuMessage -Message "you need to select a number within the range (1-$($choices.count))" -Color Red -Wait
-                    $msg|Invoke-MenuMessage|%{
-                        $AnswerWriter.Add($_)
-                    }
-                    # $SelectionWait = $true
-                    # Write-MenuString -Message "you need to select a number within the range (1-$($usingChoices.count))" -Parameters @{ForegroundColor="red"} @setParam
-                }
-            }
-            elseif($answer -ieq "b")
-            {
-                $Menu.Returncode = [with_MenuReturn]::Back
-                $found = $true
-            }
-            elseif($answer -ieq "q")
-            {
-                $Menu.Returncode = [with_MenuReturn]::quit
-                $found = $true
-            }
-            elseif($answer -ieq "r")
-            {
-                $found = $false
-                #do nothing/refresh
-            }
-            elseif($answer -in "one","two","three","four","five","six","seven","eight","nine")
-            {
-                # $SelectionWait = $true
-                $msg = New-MenuMessage -Message "cheeky devil. No, A PROPER number. digits 1-$($Menu.choices.count)" -Color Red -Wait
-                $msg|Invoke-MenuMessage|%{
-                    $AnswerWriter.Add($_)
-                }
-                # Write-MenuString -Message "cheeky devil. No, A PROPER number. digits 1-$($Menu.choices.count)" -Parameters @{ForegroundColor="red"} @setParam
+                $optParam.OptionalInputs += "quit"
             }
             else {
-                # $SelectionWait = $true
-                $msg = New-MenuMessage -Message "You need to select a number" -Color Red -Wait
-                $msg|Invoke-MenuMessage|%{
-                    $AnswerWriter.Add($_)
-                }
-                # Write-MenuString -Message "You need to select a number" -Parameters @{ForegroundColor="red"} @setParam
+                $optParam.OptionalInputs += "back"
             }
 
-            [void](Write-Menu -writer $AnswerWriter)
+            $selection = Show-MenuSelection -Definition $Choices -DefinitionKey 'name' -ReturnType object @optParam -AsMenu -PauseOnWrongAnswer
+            
+            if($selection -is [with_MenuReturn])
+            {
+                switch($selection)
+                {
+                    "back"{
+                        $Menu.Returncode = [with_MenuReturn]::Back
+                        $found = $true
+                    }
+                    "quit"{
+                        $Menu.Returncode = [with_MenuReturn]::quit
+                        $found = $true
+                    }
+                    "refresh"{
+                        $found = $false
+                    }
+                }
+            }
+            else {
+                # $selection = $
+                if($selection -is [with_Menu])
+                {
+                    $MenuReturn = Invoke-Menu -menu $selection
+                    if($MenuReturn.returncode -eq [with_MenuReturn]::Error)
+                    {
+                        throw "Error happened!"
+                    }
+                    elseif($MenuReturn.returncode -eq [with_MenuReturn]::Quit)
+                    {
+                        $Menu.returncode = [with_menureturn]::quit
+                        $found = $true
+                    }
+                }
+                elseif($selection -is [with_Menu_Choice])
+                {
+                    Invoke-Menuchoice -Choice $selection -parent $Menu
+                    if($menu.Settings.WaitAfterChoiceExecution)
+                    {
+                        Write-Debug "Wait after execution enabled. sending wait message"
+                        $Writer = [With_Menu_Writer]::new()
+                        New-MenuMessage -Message "Execution of '$($selection.name) ended. press enter to continue'" -Wait|Invoke-MenuMessage|%{
+                            $AnswerWriter.Add($_)
+                        }
+                        Write-Menu -writer $Writer
+                    }
+                }
+            }
+
+            #refresh,back
+            # if( $Choices.count)
+            # {
+            #     $count = 1
+            #     $Line = $Writer.NextLine()
+            #     $Choices|%{
+            #         $ch = [With_menu_LineItem]::new()
+            #         $ch.Text = "$count. $($_.name)"
+            #         $ch.type = "Choice"
+            #         $Writer.Add($Line,$ch)
+            #         $count++
+            #     }
+            # }
+            
+            # #QUESTION
+            # $ReadHostText = @()
+            # if($Choices.Count)
+            # {
+            #     $ReadHostText += "Select from 1-$($Choices.Count)"
+            # }
+
+            # if(!$Menu.IsRoot)
+            # {
+            #     $ReadHostText += "(b)ack"
+            # }
+
+            # $ReadHostText += "(q)uit"
+            # $ReadHostText += "(r)efresh"
+            # $Question = [With_menu_LineItem]::new()
+            # $Question.Text = $ReadHostText -join ", "
+            # $Question.type = "question"
+            # $Writer.Add($Question)
+
+            # $answer = ""
+            # try{
+            #     $Answer = Write-Menu -writer $writer #-settings $menu.Settings
+            # }
+            # catch [System.ArgumentOutOfRangeException] {
+            #     Write-Verbose "Catched a out of range exception for setcursorposition. refreshing"
+            #     $answer = "r"
+            # }
+            # catch{
+            #     throw $_
+            # }
+
+            # Write-Verbose "Answer: '$answer'"
+            # $AnswerWriter = [With_Menu_Writer]::new()
+            # if($Answer -match "^[0-9]{1,2}$")
+            # {
+            #     $Answer = [int]$Answer
+            #     if($Answer -le $Choices.count -and $Answer -ne 0)
+            #     {
+            #         $selection = $Choices[($Answer-1)]
+            #         Write-verbose "Selected choice $answer`: $selection"
+            #         if($selection -is [with_Menu])
+            #         {
+            #             $MenuReturn = Invoke-Menu -menu $selection
+            #             if($MenuReturn.returncode -eq [with_MenuReturn]::Error)
+            #             {
+            #                 throw "Error happened!"
+            #             }
+            #             elseif($MenuReturn.returncode -eq [with_MenuReturn]::Quit)
+            #             {
+            #                 $Menu.returncode = [with_menureturn]::quit
+            #                 $found = $true
+            #             }
+            #         }
+            #         elseif($selection -is [with_Menu_Choice])
+            #         {
+            #             Invoke-Menuchoice -Choice $selection -parent $Menu
+            #             if($menu.Settings.WaitAfterChoiceExecution)
+            #             {
+            #                 Write-Debug "Wait after execution enabled. sending wait message"
+            #                 New-MenuMessage -Message "" -Wait|Invoke-MenuMessage|%{
+            #                     $AnswerWriter.Add($_)
+            #                 }
+            #             }
+            #         }
+            #     }
+            #     else
+            #     {
+            #         $msg = New-MenuMessage -Message "you need to select a number within the range (1-$($choices.count))" -Color Red -Wait
+            #         $msg|Invoke-MenuMessage|%{
+            #             $AnswerWriter.Add($_)
+            #         }
+            #         # $SelectionWait = $true
+            #         # Write-MenuString -Message "you need to select a number within the range (1-$($usingChoices.count))" -Parameters @{ForegroundColor="red"} @setParam
+            #     }
+            # }
+            # elseif($answer -ieq "b")
+            # {
+            #     $Menu.Returncode = [with_MenuReturn]::Back
+            #     $found = $true
+            # }
+            # elseif($answer -ieq "q")
+            # {
+            #     $Menu.Returncode = [with_MenuReturn]::quit
+            #     $found = $true
+            # }
+            # elseif($answer -ieq "r")
+            # {
+            #     $found = $false
+            #     #do nothing/refresh
+            # }
+            # elseif($answer -in "one","two","three","four","five","six","seven","eight","nine")
+            # {
+            #     # $SelectionWait = $true
+            #     $msg = New-MenuMessage -Message "cheeky devil. No, A PROPER number. digits 1-$($Menu.choices.count)" -Color Red -Wait
+            #     $msg|Invoke-MenuMessage|%{
+            #         $AnswerWriter.Add($_)
+            #     }
+            #     # Write-MenuString -Message "cheeky devil. No, A PROPER number. digits 1-$($Menu.choices.count)" -Parameters @{ForegroundColor="red"} @setParam
+            # }
+            # else {
+            #     # $SelectionWait = $true
+            #     $msg = New-MenuMessage -Message "You need to select a number" -Color Red -Wait
+            #     $msg|Invoke-MenuMessage|%{
+            #         $AnswerWriter.Add($_)
+            #     }
+            #     # Write-MenuString -Message "You need to select a number" -Parameters @{ForegroundColor="red"} @setParam
+            # }
+
+            # [void](Write-Menu -writer $AnswerWriter)
             # $found = $true
         }
 
