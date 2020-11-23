@@ -25,7 +25,7 @@ function New-Menu {
     }
     
     process {
-        $MenuItems = (Invoke-Scriptblock -InputItem $Definition -Identificator $Menu.ToString())
+        $MenuItems = @((Invoke-Scriptblock -InputItem $Definition -Identificator $Menu.ToString()))
 
         #FILTERS
         $Menu.Filters = @(Request-MenuFilters -Array $MenuItems)|%{
