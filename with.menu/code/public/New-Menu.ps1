@@ -13,15 +13,7 @@ function New-Menu {
         $Menu = [with_Menu]::new()
         
         $Menu.Name = $Title
-        # $Menu.description = "$Description"
         $Menu.IsRoot = $true
-        # if(![string]::IsNullOrEmpty($FilterName))
-        # {
-        #     $Menu.filter = $FilterName
-        #     $Menu.FilterValue = $FilterValue
-        # }
-
-        # Write-verbose "$menu Processing"
     }
     
     process {

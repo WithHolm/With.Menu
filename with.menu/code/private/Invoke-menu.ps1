@@ -22,6 +22,9 @@ function invoke-Menu {
             Write-Verbose "$Menu`: Getting global settings"
             $menu.Settings = [with_menu_Setting]::GetGlobal()
         }
+
+        $script:CurrentMenu = $Menu 
+        $global:_Statuses = @()
     }
     
     process {
@@ -29,22 +32,20 @@ function invoke-Menu {
         $Found = $false
         while($Found -eq $false)
         {
+            $ThisRunID = [guid]::NewGuid().Guid
+            Write-Verbose $ThisRunID
             $SelectionWait = $false
             $Writer = [With_Menu_Writer]::new()
-            
-            # $Lines = [System.Collections.Generic.List[With_menu_Line]]::new()
 
+            #Clear screen if defined in options
             if($menu.settings.ClearScreenOn -in "All","Menu")
             {
                 Clear-Host
             }
+
             #TITLE
             $Writer.Add($Menu.GetTile())
             
-
-
-            # $Line = 2
-
             #figure out filters
             if($menu.filters.Count)
             {
@@ -93,13 +94,10 @@ function invoke-Menu {
             Write-Menu -writer $Writer
             
             $optParam = @{
-                OptionalInputs = @("refresh")
+                OptionalInputs = @("refresh","quit")
             }
-            if($menu.IsRoot)
+            if(!$menu.IsRoot)
             {
-                $optParam.OptionalInputs += "quit"
-            }
-            else {
                 $optParam.OptionalInputs += "back"
             }
 
@@ -127,6 +125,7 @@ function invoke-Menu {
                 if($selection -is [with_Menu])
                 {
                     $MenuReturn = Invoke-Menu -menu $selection
+                    $script:CurrentMenu = $Menu 
                     if($MenuReturn.returncode -eq [with_MenuReturn]::Error)
                     {
                         throw "Error happened!"
