@@ -2,6 +2,7 @@ function Show-MenuSelection {
     [CmdletBinding()]
     param (
         $Definition,
+        [string]$Name,
         [string]$DefinitionKey,
         [with_menu_selection_returntype]$ReturnType = "int",
         [with_menu_selection_optionalInput[]]$OptionalInputs = @([with_menu_selection_optionalInput]::back),
@@ -20,6 +21,14 @@ function Show-MenuSelection {
         while(!$Found)
         {
             $writer = [With_Menu_Writer]::new()
+            if(![string]::IsNullOrEmpty($name))
+            {
+                $ch = [With_menu_LineItem]::new()
+                $ch.type = "title"
+                $ch.Text = "$name"
+                $Writer.Add($ch)
+            }
+            
             if($Definition -is [scriptblock])
             {
                 Write-Verbose "Definition is scriptblock. invoking and getting results as an array"
@@ -52,9 +61,28 @@ function Show-MenuSelection {
                         Write-Verbose "The .$DefinitionKey value for the item was empty. using .tostring() instead: $($_|convertto-json -compress)"
                     }
                 }
+                elseif($_ -is [hashtable] -or $_ -is [System.Collections.Specialized.OrderedDictionary])
+                {
+                    if($_.keys -contains "name")
+                    {
+                        $val = $_.name
+                    }
+                    elseif($_.keys -contains "n")
+                    {
+                        $val = $_.n
+                    }
+                }
                 elseif($_.psobject.properties.name -contains "name" -or $_.psobject.properties.name -contains "n")
                 {
-                    $val = $_.name
+                    if($_.psobject.properties.name -contains "name")
+                    {
+                        $val = $_.name
+                    }
+                    elseif($_.psobject.properties.name -contains "n")
+                    {
+                        $val = $_.n
+                    }
+                    # $val = $_.name
                 }
                 
 
@@ -68,7 +96,7 @@ function Show-MenuSelection {
             })
 
             $count = 1
-            $Line = $Writer.currentline()
+            $Line = $Writer.NextLine()
             $WriteChoices|%{
                 $ch = [With_menu_LineItem]::new()
                 $ch.Text = "$count. $_"
@@ -197,12 +225,25 @@ function Show-MenuSelection {
         
     }
 }
-
-
+$items = @(
+    @{
+        n = "test"
+        v = "jeoo"
+    }
+    @{
+        n = "test"
+        v = "jeoo"
+    }
+    @{
+        n = "test"
+        v = "jeoo"
+    }
+)
 # $items = @(
-#     New-MenuChoice "test" "test"
-#     New-MenuChoice "test2" "test"
-#     New-MenuChoice "test3" "test"
-#     New-MenuChoice "test4" "test"
-# )
+    #     New-MenuChoice "test" "test"
+    #     New-MenuChoice "test2" "test"
+    #     New-MenuChoice "test3" "test"
+    #     New-MenuChoice "test4" "test"
+    # )
+#     (New-MenuSetting).SetGlobal()
 # Show-MenuSelection -Definition $items -ReturnType int -OptionalInputs back -AcceptedInput int -Verbose
