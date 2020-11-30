@@ -1,4 +1,4 @@
-using module "C:\git\With.Menu\with.menu\code\class\Menu.class.ps1"
+# using module "C:\git\With.Menu\with.menu\code\class\Menu.class.ps1"
 
 function Invoke-MenuStatus
 {
