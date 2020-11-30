@@ -109,12 +109,7 @@ Enum With_menu_lineItem_Type
     Message
 }
 
-Enum With_Menu_Setting_ConsoleTooSmall
-{
-    RetryOnce
-    Error
-    Ignore
-}
+
 
 class With_menu_LineItem
 {
@@ -127,6 +122,13 @@ class With_menu_LineItem
     }
 }
 
+Enum With_Menu_Setting_ConsoleTooSmall
+{
+    RetryOnce
+    Error
+    Ignore
+}
+
 class with_menu_setting:with_menu_item
 {
     [parameter(DontShow)]
@@ -134,22 +136,29 @@ class with_menu_setting:with_menu_item
 
     [parameter(DontShow)]
     [with_Menutype]$Type = [with_Menutype]::Setting
-
+    
+    [parameter(DontShow)]
     [string]$Id = [System.IO.Path]::GetRandomFileName() 
 
     hidden [Hashtable]$Hash = @{}
     
     #? When to clear screen.
+    [parameter(HelpMessage="when to clear screen")]
     [With_ClearScreenOn]$ClearScreenOn = "None"
     
     #? What character to use as padding
+
+    [parameter(HelpMessage="defines padding to use")]
     [ValidateLength(1,1)]
     [String]$PadChar = "-"
     
     #? Defines width or minimum width of -AutoAjustMenu is set to true 
+    [parameter(HelpMessage="Defines width of menu. is overridden if one item in menu is wider and -AutoAjustMenu is set to true.")]
+    [ValidateRange(10,999)]
     [int]$MenuWidth = 40
 
     #? Ajusts width of menu to match the longest string of characters in menu
+    [parameter(HelpMessage="Automatically adjust size of menu if one of the items is wider than the menu")]
     [bool]$AutoAjustMenu = $true
 
     # #? If console is too small for the menu, what to do
@@ -157,23 +166,34 @@ class with_menu_setting:with_menu_item
     [With_Menu_Setting_ConsoleTooSmall]$ConsoleTooSmall = "RetryOnce"
 
     #? Where to position the menu in the console
+    [parameter(HelpMessage="where on the screen to show the menu")]
     [With_Position]$MenuPosition = "Left"
 
     #? where to position the status in the menu
+    [parameter(HelpMessage="where on the menu to show the status")]
     [With_Position]$StatusPosition = "Middle"
-
+    
     #? Where to position the Title in the menu
+    [parameter(HelpMessage="where on the menu to show the title")]
     [With_Position]$TitlePosition = "Middle"
-
+    
     #? where to position choices in the menu
+    [parameter(HelpMessage="where on the menu to show the choices")]
     [With_Position]$ChoicePosition = "Left"
-
+    
     #? where to align the choices
+    [parameter(HelpMessage="How to allign the choices on the menu")]
     [With_Position]$ChoiceAlignment = "Left"
-
+    
+    [parameter(HelpMessage="Enable pester",DontShow)]
     [bool]$PesterEnabled = $false
 
+    [parameter(HelpMessage = "Value that defines colors for true/false. default is green/red")]
+    [ValidateCount(2,2)]
+    [System.ConsoleColor[]]$StatusBoolColor = @("Green","Red")
+    
     #? show 'press ok to continue' after execution of choices? Exists because of clearscreen
+    [parameter(HelpMessage = "show 'press ok to continue' after execution of choices? Exists because of clearscreen")]
     [bool]$WaitAfterChoiceExecution = $true
 
     static [with_menu_setting] GetGlobal()
@@ -181,8 +201,8 @@ class with_menu_setting:with_menu_item
         $Setting = [with_menu_setting]::new()
         if($setting.GlobalVar().Count -eq 0)
         {
-            throw "Could not find global setting"
-            return $null
+            Write-debug "Could not find global settings. creting new"
+            return (New-MenuSetting)
         }
         $Global = $Setting.GlobalVar()
         $global.keys|%{
@@ -223,7 +243,7 @@ class with_menu_setting:with_menu_item
         $global = $this.GlobalVar()
         if($global.id -ne $this.id)
         {
-            Write-verbose "Changing global id from '$($global.id)' to '$($this.id)'"
+            Write-verbose "Changing global options id from '$($global.id)' to '$($this.id)'"
         }
         $Global:_MenuSettings = $this.Hash
         # $global = $this.Hash
@@ -240,7 +260,22 @@ class with_menu:With_Menu_ShowItem
     [System.Collections.Generic.List[with_Menu_Status]]$Status = [System.Collections.Generic.List[with_Menu_Status]]::new()
     [System.Collections.Generic.List[with_menu_filter]]$Filters = [System.Collections.Generic.List[with_menu_filter]]::new()
     [with_menu_setting]$Settings
+    [guid]$_RunId
     new() {}
+
+    NewRunId()
+    {
+        $this._RunId = [guid]::NewGuid()
+    }
+
+    [string]GetRunID()
+    {
+        if([string]::IsNullOrEmpty($this._RunId.Guid))
+        {
+            $this.NewRunId()
+        }
+        return $this._RunId.Guid
+    }
 
     [With_menu_LineItem]GetTile()
     {

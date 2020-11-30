@@ -55,8 +55,11 @@ function New-MenuSetting {
         [With_Position]$TitlePosition = "Middle",
         
         [parameter(HelpMessage="where on the screen to show the menu")]
-        [With_Position]$ChoicePosition = "Left"
+        [With_Position]$ChoicePosition = "Left",
 
+        [parameter(HelpMessage = "Value that defines colors for true/false. default is green/red")]
+        [ValidateCount(2,2)]
+        [System.ConsoleColor[]]$StatusBoolColor = @("Green","Red")
 
     )
     begin {
@@ -73,6 +76,7 @@ function New-MenuSetting {
         $Setting.ChoicePosition = $ChoicePosition
         $setting.AutoAjustMenu = !$AutoAjustMenuDisabled.IsPresent
         $Setting.ConsoleTooSmall = $ConsoleTooSmall
+        $setting.StatusBoolColor = $StatusBoolColor
     }
     end {
         return $Setting
