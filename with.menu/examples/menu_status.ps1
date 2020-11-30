@@ -11,13 +11,6 @@ New-Menu "status menu"{
         New-MenuStatus "FalseValue" -action {$false} -Boolean
         New-MenuStatus "TrueValue" -action {$true} -Boolean
     }
-    # New-Menu "Line Colour"{
-    #     New-MenuMessage -Message "Here is a selection of coloured statuses"
-    #     [enum]::GetNames([System.ConsoleColor])|%{
-    #         New-MenuStatus "$_" -Type Line "This is a $_ status" -Color $_ -line ([int][System.ConsoleColor]$_)
-
-    #     }
-    # }
     New-Menu "keyvalue Colour" {
         New-MenuMessage '"Here is a selection of coloured statuses"'
         [enum]::GetNames([System.ConsoleColor])|%{

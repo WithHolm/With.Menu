@@ -1,3 +1,5 @@
+using module "C:\git\With.Menu\with.menu\code\class\Menu.class.ps1"
+
 function Invoke-MenuStatus
 {
     [CmdletBinding()]
@@ -18,8 +20,18 @@ function Invoke-MenuStatus
             
             
             #VALUE
-            $Val = $_.GetActionString()
+            $statusname = "$($Script:runid)_$_"
+            $st = $global:_Statuses|?{$_.statusname -eq $statusname}
+            if($st)
+            {
+                $val = $st.StatusValue
+            }
+            else {
+                write-verbose "$_ using invoked menustatus"
+                $Val = $_.GetActionString()
+            }
             $Value = [With_menu_LineItem]::new()
+            
             $Value.Text = $val
             $Value.type = "Status"
 
@@ -27,7 +39,7 @@ function Invoke-MenuStatus
             {
                 if ([bool]::Parse($val))
                 {
-                    $Value.color = [System.ConsoleColor]::Green 
+                    $Value.color =  [System.ConsoleColor]::Green 
                 }
                 else 
                 { 
