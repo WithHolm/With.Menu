@@ -201,7 +201,7 @@ class with_menu_setting:with_menu_item
         $Setting = [with_menu_setting]::new()
         if($setting.GlobalVar().Count -eq 0)
         {
-            Write-debug "Could not find global settings. creting new"
+            Write-debug "Could not find global settings. creating new"
             return (New-MenuSetting)
         }
         $Global = $Setting.GlobalVar()
@@ -223,7 +223,7 @@ class with_menu_setting:with_menu_item
 
     SetValue([string]$Key, $value)
     {
-        if($this.Hash.ContainsKey($Key))
+        if($this.Hash.ContainsKey($Key) -or $this.psobject.properties.name -contains $key)
         {
             $this.$key = $value
             $this.Hash.$key = $value
@@ -298,6 +298,7 @@ enum with_menu_selection_optionalInput
     quit
     back
     refresh
+    divideline
 }
 
 enum with_menu_selection_acceptedInput
@@ -308,13 +309,21 @@ enum with_menu_selection_acceptedInput
 
 class with_menu_selection:With_Menu_ShowItem
 {
-    [System.Collections.Generic.List[with_menu_choice]]$action
+    $Definition
+    [string]$Definitionkey
+    # [System.Collections.Generic.List[with_menu_choice]]$action
     [with_Menutype]$Type = [with_Menutype]::Selection
     [with_menu_selection_returntype]$ReturnType = [with_menu_selection_returntype]::int
     [with_menu_selection_optionalInput[]]$OptionalInput = @()
     [with_menu_selection_acceptedInput]$AcceptedInput = @()
     [with_MenuReturn]$ReturnCode
+    [bool]$ProcessAsMenu
+    [bool]$PauseOnWrongAnswer
     new(){}
+    [string]ToString()
+    {
+        return "[$($this.type)]"
+    }
 }
 
 class with_menu_choice:With_Menu_ShowItem
