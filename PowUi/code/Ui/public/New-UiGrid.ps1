@@ -1,8 +1,7 @@
-function Write-Status {
+function New-UiGrid {
     [CmdletBinding()]
-    [Outputtype([With_Menu_Line])]
     param (
-        [System.Collections.Generic.List[with_menu_status]]$Status
+        
     )
     
     begin {

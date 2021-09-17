@@ -14,7 +14,7 @@ function Write-Menu
     
     process
     {
-        $ConsoleWidth = $Host.UI.RawUI.WindowSize.Width
+        $ConsoleWidth = $host.UI.RawUI.BufferSize.Width
         $MaxCharWidth = ($writer.Lines.keys | % {
                 if("choice" -in $writer.Lines[$_].type)
                 {

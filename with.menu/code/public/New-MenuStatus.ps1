@@ -21,13 +21,23 @@ function New-MenuStatus {
     )
     
     begin {
+        #Init status object
         $Status = [with_Menu_Status]::new()
     }
     
     process {
         $Status.name = $Name
         $Status.action = $action
-        $Status.statustype = [with_StatusType]::KeyValue
+
+        #if status is a boolean, set statustype 
+        if($Boolean)
+        {
+            $Status.statustype = [with_StatusType]::KeyBool
+        }
+        else {
+            $Status.statustype = [with_StatusType]::KeyVal
+        }
+        
         $Status.line = $line
         $Status.Boolean = $Boolean.IsPresent
         

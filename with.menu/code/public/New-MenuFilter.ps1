@@ -7,7 +7,9 @@ function New-MenuFilter {
 
         [parameter(Mandatory,Position=0)]
         [scriptblock]$Filter,
+
         [Scriptblock]$OnTrue,
+        
         [scriptblock]$OnFalse
     )
     

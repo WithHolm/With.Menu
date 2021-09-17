@@ -38,7 +38,6 @@ function Out-Console {
 
         if($Question)
         {
-            # Write-host "$($message -join '')" -NoNewline -ForegroundColor $Color
             Read-Host -Prompt "$($message -join '')"
         }
         else 

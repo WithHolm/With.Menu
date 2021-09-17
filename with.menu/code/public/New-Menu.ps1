@@ -17,10 +17,13 @@ function New-Menu {
     }
     
     process {
+        #Get Menu Items
         $MenuItems = @((Invoke-Scriptblock -InputItem $Definition -Identificator $Menu.ToString()))
 
-        #FILTERS
-        $Menu.Filters = @(Request-MenuFilters -Array $MenuItems)|%{
+        #Get Menu Filters
+        $MenuItems|?{$_ -is [with_menu_filter]}|%{
+            Write-verbose "found $_"
+
             $Flt = $_
 
             #extract items that should come forwards on true
@@ -32,6 +35,7 @@ function New-Menu {
                     $_
                 }
             }
+
             #extract items that should come forwards on false
             if(![string]::IsNullOrEmpty($Flt.onFalse))
             {
@@ -41,8 +45,8 @@ function New-Menu {
                     $_
                 }
             }
-
-            $Flt
+            $Menu.Filters.Add($Flt)
+            # $Flt
         }
         
         #test that names are unique
@@ -70,79 +74,6 @@ function New-Menu {
         Request-MenuMessage -Array $MenuItems|%{
             $Menu.Message.add($_)
         }
-
-        #TESTS
-
-
-        # return $menu
-        # return $Menu
-        # $Menu.choices = request-MenuChoices -input $Array
-
-        # $Setting = $using|?{$_ -is [with_menu_setting]}
-        # if($setting)
-        # {
-        #     $menu.settings = $Setting|select -first 1
-        # }
-
-        # $Menu.filters = [System.Collections.Generic.List[with_Menu_Filter]]::new()
-        # $using|?{$_ -is [with_menu_filter]}|%{
-        #     Write-verbose "status $_"
-        #     $menu.filters.Add($_)
-        # }
-
-        
-            
-        # # = [System.Collections.Generic.List[with_Menu_Status]]::new((Request-MenuStatus -))
-        # # $using|?{$_ -is [with_Menu_status]}|%{
-        # #     Write-verbose "status $_"
-        # #     $menu.Status.Add($_)
-        # # }
-
-        # Foreach($filt in $menu.filters)
-        # {
-        #     if(@($menu.filters|?{$_.name -eq $filt.name}).count -gt 1)
-        #     {
-        #         Throw "Cannot have multiple filters with the same name"
-        #     }
-        # }
-
-        # foreach($status in $Menu.status)
-        # {
-        #     #check for conflicting statuses (statuses that have the same line, but not the same type)
-        #     $conflictingStatus = ($Menu.status|?{$_.line -eq $status.line -and $_.StatusType -ne $status.StatusType})
-        #     if(($Menu.status|?{$_.line -eq $status.line -and $_.StatusType -ne $status.StatusType}))
-        #     {
-        #         throw "'$($status.Name)' Keyvalue status cannot share a line with line statuses: $($conflictingStatus.name -join ", ")"
-        #     }
-
-        #     #check if defined filter exists for item
-        #     if(![string]::IsNullOrEmpty($status.filter))
-        #     {
-        #         if(!$menu.filters.where{$_.name -eq $status.filter})
-        #         {
-        #             throw "Cannot find filter '$($status.filter)' defined for $status"
-        #         }
-        #     }
-        # }
-
-        # foreach($item in $menu.choices)
-        # {
-        #     #check if defined filter exists for item
-        #     if(![string]::IsNullOrEmpty($item.filter))
-        #     {
-        #         if(!$menu.filters.where{$_.name -eq $item.filter})
-        #         {
-        #             throw "Cannot find filter '$($status.filter)' defined for $item"
-        #         }
-        #     }
-        # }
-
-        # Write-verbose "Found $($Menu.choices.Count) choices and $($menu.status.Count) statuses"
-        # # if($Menu.choices.count -eq 0 -and $Menu.status.count -eq 0)
-        # # {
-        # #     throw "The menu '$name' doesent have any choices or statuses"
-        # # }        
-        # return $Menu
     }
     
     end {

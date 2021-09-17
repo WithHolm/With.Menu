@@ -1,4 +1,6 @@
-& "$PSScriptRoot\load.ps1"
+# & "$PSScriptRoot\load.ps1"
+
+ipmo "$(split-path $PSScriptRoot -Parent)" -Force
 
 # module
 New-Menu "main" {
@@ -7,4 +9,4 @@ New-Menu "main" {
     gci $psscriptroot -Filter "menu_*.ps1"|%{
         & $_.FullName
     }
-}|Start-Menu -Verbose
+}|Start-Menu

@@ -3,7 +3,6 @@ function Start-Menu {
     param (
         [parameter(ValueFromPipeline)]
         [with_Menu]$Menu
-        # [switch]$ShowDescription
     )
     
 

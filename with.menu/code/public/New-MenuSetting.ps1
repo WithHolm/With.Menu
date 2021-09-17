@@ -27,6 +27,8 @@ function New-MenuSetting {
     [CmdletBinding()]
     [outputtype([with_Menu_Setting])]
     param (
+
+        
         [parameter(HelpMessage="When to clear screen. Default is none")]
         [With_ClearScreenOn]$ClearScreenOn = "None",
         
@@ -59,7 +61,10 @@ function New-MenuSetting {
 
         [parameter(HelpMessage = "Value that defines colors for true/false. default is green/red")]
         [ValidateCount(2,2)]
-        [System.ConsoleColor[]]$StatusBoolColor = @("Green","Red")
+        [System.ConsoleColor[]]$StatusBoolColor = @("Green","Red"),
+
+        [parameter(HelpMessage = "Defines what to use for the brackets that go around optional choices and choices made in 'promt' style choices. IE: [B]ack,(B)ack,{B}ack")]
+        [With_Menu_Setting_ChoiceBracketType]$ChoiceBracketType = [With_Menu_Setting_ChoiceBracketType]::Sqarebracket
 
     )
     begin {
@@ -77,6 +82,7 @@ function New-MenuSetting {
         $setting.AutoAjustMenu = !$AutoAjustMenuDisabled.IsPresent
         $Setting.ConsoleTooSmall = $ConsoleTooSmall
         $setting.StatusBoolColor = $StatusBoolColor
+        $setting.ChoiceBracketType = $ChoiceBracketType
     }
     end {
         return $Setting

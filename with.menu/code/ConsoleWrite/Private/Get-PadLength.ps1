@@ -4,6 +4,7 @@ gives you coordinates to position you on a line
 
 .DESCRIPTION
 Gives you an array of to that defines the start and end [count from start,count to end] used to figure out padding for write-host
+This is used both to figure out where the menu itslef is positioned in console and where the items inside the menu is positioned
 
 .PARAMETER MaxLength
 Length of whole (ie consolewindow charlength)
@@ -15,10 +16,13 @@ Length of item (ie "hey".length)
 Left, Right, Middle
 
 .EXAMPLE
+#length of string you want to make
 $length = 100
-$Pad = Get-Padlength -Maxlength 100 -ItemLength "Hey".length -position "Middle"
+$Message = "Hey"
+$Padding = "-"
+$Pad = Get-Padlength -Maxlength 100 -ItemLength $Message.length -position "Middle"
 # returns @(48,49)
-Write-host "$("-"*$pad[0])hey$("-"*$pad[1])"
+Write-host "$($Padding*$pad[0])hey$($Padding*$pad[1])"
 # returns "------------------------------------------------hey-------------------------------------------------"
 "-"*$length
 # returns "----------------------------------------------------------------------------------------------------"

@@ -1,5 +1,3 @@
-
-
 enum with_MenuReturn
 {
     NotFinished
@@ -129,6 +127,13 @@ Enum With_Menu_Setting_ConsoleTooSmall
     Ignore
 }
 
+enum With_Menu_Setting_ChoiceBracketType
+{
+    Sqarebracket
+    Curlybracket
+    Parenthesis
+}
+
 class with_menu_setting:with_menu_item
 {
     [parameter(DontShow)]
@@ -185,6 +190,9 @@ class with_menu_setting:with_menu_item
     [parameter(HelpMessage="How to allign the choices on the menu")]
     [With_Position]$ChoiceAlignment = "Left"
     
+    # [ValidateCount(2,2)]
+    [With_Menu_Setting_ChoiceBracketType]$ChoiceBracketType = [With_Menu_Setting_ChoiceBracketType]::Sqarebracket
+
     [parameter(HelpMessage="Enable pester",DontShow)]
     [bool]$PesterEnabled = $false
 
@@ -202,7 +210,9 @@ class with_menu_setting:with_menu_item
         if($setting.GlobalVar().Count -eq 0)
         {
             Write-debug "Could not find global settings. creating new"
-            return (New-MenuSetting)
+            $Setting = New-MenuSetting
+            $Setting.SetGlobal()
+            # return (New-MenuSetting )
         }
         $Global = $Setting.GlobalVar()
         $global.keys|%{
@@ -301,10 +311,15 @@ enum with_menu_selection_optionalInput
     divideline
 }
 
-enum with_menu_selection_acceptedInput
+# enum with_menu_selection_acceptedInput
+# {
+#     int
+# }
+
+enum with_menu_selection_style
 {
-    int
-    # firstLetter
+    classic
+    prompt
 }
 
 class with_menu_selection:With_Menu_ShowItem
@@ -315,7 +330,8 @@ class with_menu_selection:With_Menu_ShowItem
     [with_Menutype]$Type = [with_Menutype]::Selection
     [with_menu_selection_returntype]$ReturnType = [with_menu_selection_returntype]::int
     [with_menu_selection_optionalInput[]]$OptionalInput = @()
-    [with_menu_selection_acceptedInput]$AcceptedInput = @()
+    # [with_menu_selection_acceptedInput]$AcceptedInput = @()
+    [with_menu_selection_style]$Style = [with_menu_selection_style]::classic
     [with_MenuReturn]$ReturnCode
     [bool]$ProcessAsMenu
     [bool]$PauseOnWrongAnswer
@@ -342,14 +358,15 @@ class with_menu_message:With_Menu_ShowItem
 
 enum with_StatusType
 {
-    KeyValue = 0
+    keyVal = 0
+    keyBool = 1
 }
 
 class with_menu_status:With_Menu_ShowItem
 {
     $action
     [with_Menutype]$Type = [with_Menutype]::Status
-    [with_StatusType]$StatusType = [with_StatusType]::KeyValue
+    [with_StatusType]$StatusType = [with_StatusType]::keyVal
     [int]$Line = 0
     [System.ConsoleColor]$Color =  $((get-host).ui.rawui.ForegroundColor)
     [bool]$Boolean = $false

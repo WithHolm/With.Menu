@@ -1,0 +1,1 @@
+invoke-psake "$PSScriptRoot\ci\psakefile.ps1" -parameters @{root = $PSScriptRoot} -taskList Build
