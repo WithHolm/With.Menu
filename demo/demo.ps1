@@ -7,7 +7,9 @@ New-Menu -Title "Powershell Menu" -Definition {
     New-MenuSetting -ClearScreenOn None -AutoAjustMenuDisabled -MenuWidth 70 -MenuPosition Middle -WaitAfterChoiceExecution -ChoiceBracketType Curlybracket
     New-MenuFilter -name "0" -Filter {$Menustate.1 -eq 0} -OnTrue {
         New-MenuMessage "En liten demo for en menu modul"
-        $Menustate.1 = 1
+        New-MenuChoice "La oss starte"{
+            $Menustate.1 = 1
+        }
     }
     
     New-MenuFilter -name "1" -Filter {$Menustate.1 -eq 1} -OnTrue {
